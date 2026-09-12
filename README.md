@@ -25,13 +25,28 @@ python -m venv venv
     venv\Scripts\activate
     ```
 
-### 3. Install Dependencies
+### 3. Install Dependencies & Setup Environment
 
-Once activated, install any required packages (if a `requirements.txt` is available):
+Once activated, install the required package for this assignment:
 
 ```bash
-pip install -r requirements.txt
+pip install groq
 ```
+
+You will also need a Groq API key to run the scripts. Get a free key at [https://console.groq.com/keys](https://console.groq.com/keys) and set it in your terminal:
+
+*   **On macOS/Linux:**
+    ```bash
+    export GROQ_API_KEY="your_api_key_here"
+    ```
+*   **On Windows (Command Prompt):**
+    ```cmd
+    set GROQ_API_KEY="your_api_key_here"
+    ```
+*   **On Windows (PowerShell):**
+    ```powershell
+    $env:GROQ_API_KEY="your_api_key_here"
+    ```
 
 ### 4. Deactivate
 
@@ -60,6 +75,10 @@ git config --global user.email "your.email@example.com"
     ```bash
     git status
     ```
+*   **Create and Switch to a Branch:** Start your work on a new branch.
+    ```bash
+    git checkout -b <branch_name>
+    ```
 *   **Add Changes:** Stage files for a commit.
     ```bash
     git add . # Adds all changed files
@@ -76,10 +95,6 @@ git config --global user.email "your.email@example.com"
 *   **Push Changes:** Upload your local commits to the remote repository.
     ```bash
     git push origin main
-    ```
-*   **Create a New Branch:** Start working on a new feature.
-    ```bash
-    git checkout -b feature/your-feature-name
     ```
 *   **Switch Branches:**
     ```bash
