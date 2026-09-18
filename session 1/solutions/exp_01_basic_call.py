@@ -50,7 +50,7 @@ Use one real-world analogy to explain every technical concept.
 """
 
 USER_PROMPT = """
-What's the capital of Australia?
+What is a variable in programming? Explain it like I'm 10 years old.
 """
 
 # -----------------------------------------------------------------------
