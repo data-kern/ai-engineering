@@ -1,0 +1,40 @@
+# ==============================================================================
+# EXERCISE 4: The Vault (Dockerizing your API)
+#
+# Hey everyone! Now that your FastAPI service works locally, it's time to package
+# it. We want to put it in a container so it runs exactly the same way on any machine.
+# But we need to do it smartly: we want fast builds (caching) and secure secrets.
+# ==============================================================================
+
+# TODO 1: Start with a lightweight Python image.
+# Why? We don't need a full OS like Ubuntu. 'slim' versions keep our image tiny and secure.
+# -> Write your FROM command below:
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# TODO 2: Copy your requirements.txt FIRST.
+# Why? Docker builds layers. If we copy our python code before installing packages,
+# Docker will reinstall everything every time you change a single line of code!
+# By copying requirements first, Docker caches the heavy pip install step.
+# -> Write your COPY command for requirements.txt below:
+
+
+# TODO 3: Install the dependencies.
+# -> Write your RUN pip install command below:
+
+
+# TODO 4: Now, copy your actual python code (the 3 exercise files you just wrote).
+# -> Write your COPY command below:
+
+
+# TODO 5: Expose port 8000 (this is just documentation for other engineers).
+# -> Write your EXPOSE command below:
+
+
+# TODO 6: Start the uvicorn server.
+# CRITICAL: Inside a container, 'localhost' means the container itself.
+# To let traffic in from the outside world, you MUST bind to host 0.0.0.0.
+# -> Write your CMD command below 
+# (Hint: CMD ["uvicorn", "exercise_03_main:app", "--host", "0.0.0.0", "--port", "8000"])
+

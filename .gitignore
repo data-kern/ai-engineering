@@ -12,3 +12,6 @@ __pycache__/
 
 # Solutions (kept local, not pushed)
 session_2/solutions/
+
+# Secrets
+*secret*.yaml

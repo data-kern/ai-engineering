@@ -1,0 +1,6 @@
+fastapi
+uvicorn
+pydantic
+groq
+arize-phoenix
+openinference-instrumentation-groq

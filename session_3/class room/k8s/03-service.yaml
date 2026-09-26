@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: riverbank-ai-service
+spec:
+  type: LoadBalancer
+  selector:
+    app: riverbank-ai-service      # Matches the label defined in 02-deployment.yaml
+  ports:
+  - protocol: TCP
+    port: 8000                     # Port the Service exposes externally
+    targetPort: 8000               # Port inside the container (FastAPI)

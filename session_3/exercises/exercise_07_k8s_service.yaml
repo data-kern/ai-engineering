@@ -1,0 +1,26 @@
+# ==============================================================================
+# EXERCISE 7: The Stable Front Door
+#
+# Pods die. Pods are reborn. Every time they restart, they get a new IP address.
+# A frontend UI cannot talk directly to a pod, because the IP keeps changing!
+# The Service gives us a single, permanent IP address that routes traffic
+# to whichever pods are currently healthy.
+# ==============================================================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: ai-service-lb
+spec:
+  # TODO 1: Tell the Service which pods to route traffic to.
+  # We labeled our pods 'app: ai-service' in the Deployment.
+  selector:
+    # -> app: ai-service
+    
+  ports:
+    # TODO 2: Map the incoming port to the target port on the pod.
+    # -> port: 8000
+    # -> targetPort: 8000
+    
+  # TODO 3: Set the type to LoadBalancer so we can access it from our local machine.
+  # -> type: LoadBalancer
+  

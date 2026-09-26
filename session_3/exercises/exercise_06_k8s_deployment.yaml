@@ -1,0 +1,48 @@
+# ==============================================================================
+# EXERCISE 6: The Immortal Pod
+#
+# A container on its own will crash and stay dead. We want Kubernetes to
+# act as an orchestrator. We will declare our "Desired State" (e.g. 2 pods),
+# and Kubernetes will relentlessly work to keep that reality true.
+# ==============================================================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ai-service-deployment
+spec:
+  # TODO 1: Tell Kubernetes how many replicas (pods) you want running at all times.
+  # -> replicas: 2
+  
+  selector:
+    matchLabels:
+      app: ai-service
+  template:
+    metadata:
+      labels:
+        app: ai-service
+    spec:
+      containers:
+      - name: ai-service
+        # TODO 2: Specify the Docker image you built in Exercise 4.
+        # -> image: ai-service:v1
+        
+        ports:
+        - containerPort: 8000
+        
+        # TODO 3: Inject the secret you made in Exercise 5.
+        env:
+        - name: GROQ_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: riverbank-secrets
+              key: GROQ_API_KEY
+              
+        # TODO 4: The Magic Hook (Liveness Probe).
+        # Why? This is how Kubernetes knows if your app froze. It hits your /health
+        # endpoint. If it fails, Kubernetes terminates the pod and starts a new one.
+        # -> Set path to /health on port 8000.
+        livenessProbe:
+          httpGet:
+            # -> path: ...
+            # -> port: ...
+          periodSeconds: 10

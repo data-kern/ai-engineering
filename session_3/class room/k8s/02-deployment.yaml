@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: riverbank-ai-service
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: riverbank-ai-service
+  template:
+    metadata:
+      labels:
+        app: riverbank-ai-service
+    spec:
+      containers:
+      - name: ai-service
+        image: riverbank-ai-service:v1
+        imagePullPolicy: IfNotPresent    # Use the locally built Docker image
+        ports:
+        - containerPort: 8000
+        env:
+        - name: GROQ_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: riverbank-secrets
+              key: GROQ_API_KEY
+        livenessProbe:
+          httpGet:
+            path: /api/v1/health
+            port: 8000
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /api/v1/health
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 5
