@@ -1,0 +1,128 @@
+APEX FINANCIAL PARTNERS
+INVESTMENT RISK POLICY 2026
+INTERNAL DOCUMENT — NOT FOR PUBLIC DISTRIBUTION
+
+========================================================
+SECTION 1: CLIENT RISK CATEGORIES
+========================================================
+
+Apex Financial classifies every client into one of three risk categories:
+
+  - Conservative
+  - Moderate
+  - Aggressive
+
+The category is assigned at onboarding based on the client's investment
+horizon, liquidity needs, income stability, and personal risk questionnaire.
+No advisor may override this category without a signed review from the
+Compliance team.
+
+========================================================
+SECTION 2: CONSERVATIVE CLIENT RULES
+========================================================
+
+Conservative clients prioritise capital preservation above all else.
+They have a low tolerance for short-term losses.
+
+2.1  MAXIMUM EQUITY EXPOSURE
+     Conservative clients must not hold more than 30% of their total
+     portfolio in equity instruments of any kind. This limit applies
+     to individual stocks, equity ETFs, and equity mutual funds combined.
+
+2.2  INDIVIDUAL STOCK CONCENTRATION
+     No single stock may represent more than 5% of the total portfolio
+     value for a Conservative client.
+
+2.3  HIGH-VOLATILITY RESTRICTION
+     Advisors must not recommend any individual equity with a 12-month
+     beta greater than 1.5 to a Conservative client. High-beta stocks
+     include but are not limited to: growth technology stocks, speculative
+     biotech, leveraged ETFs, and single-country emerging market funds.
+
+2.4  APPROVED INSTRUMENTS FOR CONSERVATIVE CLIENTS
+     Preferred instruments for Conservative portfolios include:
+       - Government bonds (sovereign-rated AAA or AA)
+       - Investment-grade corporate bonds (BBB or higher)
+       - Broad market index funds (S&P 500, FTSE 100)
+       - Dividend-paying blue-chip stocks (beta < 0.8)
+       - Money market funds
+       - Fixed deposits
+
+2.5  PROHIBITED ACTIONS
+     The following actions are STRICTLY PROHIBITED for Conservative clients:
+       - Recommending concentrated positions in growth or tech stocks
+       - Suggesting margin or leveraged investments
+       - Advising allocation above 30% in any equity category
+       - Recommending individual stocks with beta > 1.5
+
+========================================================
+SECTION 3: MODERATE CLIENT RULES
+========================================================
+
+Moderate clients seek a balance between growth and stability. They can
+tolerate moderate short-term losses in exchange for long-term appreciation.
+
+3.1  MAXIMUM EQUITY EXPOSURE
+     Moderate clients may hold up to 60% of their total portfolio in
+     equity instruments.
+
+3.2  INDIVIDUAL STOCK CONCENTRATION
+     No single stock may represent more than 10% of the total portfolio.
+
+3.3  HIGH-VOLATILITY ALLOWANCE
+     Moderate clients may hold equities with a beta up to 2.0, but
+     the total allocation to high-beta (beta > 1.5) stocks must not
+     exceed 20% of the total portfolio.
+
+3.4  APPROVED INSTRUMENTS FOR MODERATE CLIENTS
+     Approved instruments include all Conservative instruments plus:
+       - Growth stocks in established sectors (technology, healthcare)
+       - Real Estate Investment Trusts (REITs)
+       - Sector ETFs
+
+========================================================
+SECTION 4: AGGRESSIVE CLIENT RULES
+========================================================
+
+Aggressive clients prioritise long-term growth and can tolerate
+significant short-term volatility and drawdowns.
+
+4.1  MAXIMUM EQUITY EXPOSURE
+     Aggressive clients may hold up to 90% of their total portfolio in
+     equity instruments.
+
+4.2  INDIVIDUAL STOCK CONCENTRATION
+     No single stock may represent more than 20% of the total portfolio.
+
+4.3  HIGH-VOLATILITY ALLOWANCE
+     Aggressive clients may hold any publicly traded equity without
+     beta restrictions, provided full risk disclosure is on file.
+
+4.4  APPROVED INSTRUMENTS FOR AGGRESSIVE CLIENTS
+     All instruments are permitted for Aggressive clients, including:
+       - Individual growth and technology stocks (NVDA, TSLA, etc.)
+       - Leveraged ETFs (with risk disclosure)
+       - Small-cap and micro-cap stocks
+       - Emerging market funds
+
+========================================================
+SECTION 5: COMPLIANCE AND ENFORCEMENT
+========================================================
+
+5.1  All client recommendations must be documented in the CRM system
+     within 24 hours of the advisory session.
+
+5.2  Any recommendation that exceeds the limits in this policy requires
+     written sign-off from the Head of Compliance before being shared
+     with the client.
+
+5.3  Advisors found to have recommended instruments outside the client's
+     risk category are subject to disciplinary review and may be required
+     to complete additional compliance training.
+
+5.4  This policy is reviewed annually by the Compliance Committee.
+     Version: 2026.1 | Effective Date: 1 January 2026
+
+========================================================
+END OF DOCUMENT
+========================================================

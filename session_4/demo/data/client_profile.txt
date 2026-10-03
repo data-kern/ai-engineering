@@ -1,0 +1,9 @@
+Name:            Mr. James Peterson
+Client ID:       1042
+Risk Category:   Conservative
+Portfolio Value: $245,000
+Current Holdings:
+  - 60% Government Bonds (iShares US Treasury Bond ETF)
+  - 25% Blue-chip dividend stocks (JNJ, PG, KO)
+  - 15% Cash / Money Market
+Cash Available:  $8,500

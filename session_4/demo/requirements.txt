@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+pydantic
+psycopg2-binary
+groq
+sentence-transformers
+arize-phoenix
+openinference-instrumentation-groq
+requests

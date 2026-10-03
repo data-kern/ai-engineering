@@ -1,0 +1,15 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+venv/
+.env
+
+# Sensitive
+.env.local
+
+# Model cache — large, no need to commit
+~/.cache/
+
+# macOS
+.DS_Store

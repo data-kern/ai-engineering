@@ -1,0 +1,78 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# 02-deployment.yaml — Run the RAG demo service in Kubernetes.
+#
+# What this does:
+#   - Tells Kubernetes to always keep 2 instances (replicas) of the container.
+#   - Kubernetes watches the containers. If one crashes, it starts a new one
+#     automatically — this is called self-healing.
+#   - Injects the Groq API key from the Secret (never in the image).
+#   - Connects to the Postgres database running on the host machine.
+#   - Configures liveness and readiness probes using the /health endpoint.
+# ─────────────────────────────────────────────────────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rag-demo
+  labels:
+    app: rag-demo
+spec:
+  replicas: 2   # Always keep 2 pods running — self-healing
+
+  selector:
+    matchLabels:
+      app: rag-demo
+
+  template:
+    metadata:
+      labels:
+        app: rag-demo
+    spec:
+      containers:
+      - name: rag-demo
+        image: rag-demo:latest        # Built with: docker build -t rag-demo:latest .
+        imagePullPolicy: IfNotPresent # Use the locally built image
+
+        ports:
+        - containerPort: 8000
+
+        env:
+        # ── API key injected from the Secret — NEVER hardcode this ────────────
+        - name: GROQ_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: groq-secret
+              key: GROQ_API_KEY
+
+        # ── Database connection — Postgres on the host machine ─────────────────
+        # host.minikube.internal = your laptop's localhost, seen from inside K8s
+        - name: DB_HOST
+          value: "host.minikube.internal"
+        - name: DB_USER
+          value: "postgres"
+        - name: DB_PASS
+          value: "postgres"
+        - name: DB_PORT
+          value: "5432"
+
+        # ── Liveness Probe ────────────────────────────────────────────────────
+        # Kubernetes calls /health every 10 seconds.
+        # If it fails 3 times in a row → Kubernetes RESTARTS the pod.
+        # This is the self-healing mechanism from Session 3.
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 15  # Wait 15s for the model to load before checking
+          periodSeconds: 10
+          failureThreshold: 3
+
+        # ── Readiness Probe ───────────────────────────────────────────────────
+        # Kubernetes calls /health after startup.
+        # Traffic is only routed to the pod AFTER it returns 200.
+        # Prevents sending requests to a pod that hasn't loaded yet.
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 20  # Model load + embedding model init takes ~10-15s
+          periodSeconds: 5
