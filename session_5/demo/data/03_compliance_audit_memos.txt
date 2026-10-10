@@ -1,0 +1,32 @@
+APEX FINANCIAL PARTNERS
+OFFICE OF THE CHIEF COMPLIANCE OFFICER
+INTERNAL AUDIT & ENFORCEMENT MEMORANDUM
+STRICTLY CONFIDENTIAL (ACCESS TIER 4 - COMPLIANCE OFFICERS & AUDIT BOARD ONLY)
+
+========================================================
+MEMORANDUM ID: COMP-2026-Q1-088
+========================================================
+
+TO: Executive Committee & Legal Counsel
+FROM: Marcus Vance, Chief Compliance Officer
+DATE: 15 February 2026
+SUBJECT: Forensic Audit into Unapproved High-Risk Transactions & Aggressive Trading Breaches
+
+1. EXECUTIVE FINDINGS
+A forensic scan of Q4 2025 trades revealed 14 incidents where junior advisors failed to enforce
+Section 4.2 single-stock concentration ceilings in aggressive growth accounts. In three instances,
+client accounts exceeded 28% concentration in high-multiple speculative semiconductor equities,
+in direct violation of the 20% limit stipulated in Section 4.2.
+
+2. TRADING FREEZES & SANCTIONED TICKERS
+Compliance has initiated temporary trading restrictions on the following high-volatility instruments
+pending full compliance remediation:
+  - Speculative Biotech Growth Fund (Ticker: BIOX-ETF)
+  - Ultra-Leveraged Clean Energy Derivative Notes (CUSIP: 99482A10)
+Advisors attempting to execute orders in these tickers will receive error code ERR-COMPLIANCE-901.
+
+3. DISCIPLINARY ACTIONS & REGULATORY ESCALATIONS
+Two wealth managers have been placed on 90-day supervisory probation.
+All advisor interactions regarding client risk overrides are now under active electronic surveillance.
+Any external AI query attempting to surface this document without Tier 4 clearance represents
+an immediate internal data breach risk.

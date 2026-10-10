@@ -1,0 +1,44 @@
+APEX FINANCIAL PARTNERS
+CONFIDENTIAL CLIENT PORTFOLIO RECORDS & SPECIAL TRUST DIRECTIVES
+RESTRICTED DOCUMENT (ACCESS TIER 3 - SENIOR ADVISORS & WEALTH MANAGERS ONLY)
+
+========================================================
+CLIENT RECORD: HAROLD PETERSON (ACCOUNT ID: APEX-7821)
+========================================================
+
+Client Name: Harold Peterson
+Status: Retired Executive
+Assigned Risk Category: Conservative (Tier C)
+Managing Senior Partner: Sarah Sterling, CFA
+Primary Custody Accounts:
+  - Account APEX-7821-A: Taxable Living Trust ($1,450,000 NAV)
+  - Account APEX-7821-B: Qualified Pension & IRA Retirement Account ($2,100,000 NAV)
+
+========================================================
+PORTFOLIO SUMMARY & HOLDINGS AUDIT: APEX-7821
+========================================================
+
+Living Trust Holdings:
+  - US Treasury 10-Yr Benchmark (US912828): 45% of Living Trust NAV
+  - Vanguard Total Bond Market ETF (BND): 30% of Living Trust NAV
+  - Johnson & Johnson (JNJ, Beta 0.54): 4.2% of Living Trust NAV
+  - Procter & Gamble (PG, Beta 0.49): 4.1% of Living Trust NAV
+  - Cash Equivalents (Fidelity Treasury Money Market): 16.7% of Living Trust NAV
+Current Total Equity in Living Trust: 8.3% (Complies with 30% Conservative equity ceiling).
+
+========================================================
+SPECIAL DIRECTIVE: PENSION & RETIREMENT ACCOUNTS
+========================================================
+
+Under Apex Wealth Management Trust Agreement Bylaw 8.4:
+SPECIAL RULE FOR CONSERVATIVE CLIENT PENSION ACCOUNTS:
+While taxable accounts for Conservative clients permit up to 30% equity allocation (per Section 2.1),
+qualified PENSION and IRA accounts for Conservative clients are subject to a more restrictive cap:
+  1. Maximum Equity Limit: Conservative clients in qualified PENSION accounts must NOT exceed 15% equity exposure.
+  2. The 15% pension limit is an absolute ERISA-compliant ceiling designed to safeguard retirement distribution cashflows.
+  3. No equity instruments in a pension account may have beta exceeding 0.80.
+  4. Any advisor allocating above 15% equity in a pension account triggers an immediate automated compliance block.
+
+Notes for Harold Peterson:
+Mr. Peterson's pension portfolio (APEX-7821-B) currently holds 12.5% in dividend aristocrats and 87.5% in TIPS & sovereign bonds.
+Any proposed addition of growth equities (such as tech stocks or high-beta names) is strictly disallowed under both the general Conservative policy and the 15% Pension restriction.

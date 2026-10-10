@@ -1,0 +1,105 @@
+APEX FINANCIAL PARTNERS
+INVESTMENT RISK POLICY & TRADING GUIDELINES 2026
+PUBLIC INTERNAL POLICY DOCUMENT (ACCESS TIER 1 - ALL ADVISORS)
+
+========================================================
+SECTION 1: CLIENT RISK PROFILES & TAXONOMY
+========================================================
+
+Apex Financial classifies every client account into one of three distinct risk profiles:
+  - Conservative (Risk Tier C): Focus on capital preservation and low drawdown.
+  - Moderate (Risk Tier M): Balanced approach seeking moderate growth with controlled volatility.
+  - Aggressive (Risk Tier A): Maximizing capital appreciation, accepting high drawdown.
+
+Risk categories are assigned during formal onboarding through risk-tolerance assessments.
+No financial advisor may modify or override a client's risk profile without explicit written
+approval from the Chief Compliance Officer.
+
+========================================================
+SECTION 2: CONSERVATIVE CLIENT MANDATES (TIER C)
+========================================================
+
+2.1 MAXIMUM EQUITY EXPOSURE
+Conservative clients must not hold more than 30% of total portfolio value in equity
+instruments of any category. This ceiling encompasses common equities, individual shares,
+equity index mutual funds, and equity Exchange-Traded Funds (ETFs). The remaining 70% must
+be allocated to fixed income, money market instruments, or cash equivalents.
+
+2.2 SINGLE-STOCK CONCENTRATION LIMIT
+No single equity holding may represent more than 5% of total portfolio valuation for any
+Conservative client account. Diversification is strictly mandated.
+
+2.3 VOLATILITY & BETA CEILING
+Advisors are strictly prohibited from recommending or executing trades in equities possessing
+a 12-month trailing beta exceeding 1.5 relative to the S&P 500 benchmark. High-volatility equities,
+leveraged exchange-traded products, and speculative micro-caps are prohibited.
+
+2.4 PERMITTED INSTRUMENTS
+Permitted asset classes for Conservative clients comprise:
+  - Sovereign Government Bonds (rated AAA or AA)
+  - Investment-grade Corporate Fixed Income (rated BBB+ or superior)
+  - Broad diversified index mutual funds (tracking S&P 500, MSCI World)
+  - High-dividend blue-chip defensive equities with beta below 0.8
+  - Treasury bills, term deposits, and money market cash reserves
+
+2.5 PROHIBITED ADVISORY ACTIONS
+The following actions constitute direct policy violations:
+  - Concentrated equity positions in high-multiple technology or growth sectors
+  - Derivative options trading, short selling, or margin borrowing
+  - Recommending asset allocations where total equity exceeds 30%
+
+========================================================
+SECTION 3: MODERATE CLIENT MANDATES (TIER M)
+========================================================
+
+3.1 MAXIMUM EQUITY ALLOCATION
+Moderate clients may maintain up to 60% of total assets under management in equity instruments.
+
+3.2 SINGLE-STOCK CONCENTRATION LIMIT
+No single individual equity holding may exceed 10% of total portfolio valuation.
+
+3.3 VOLATILITY THRESHOLDS
+Moderate clients may hold securities with trailing beta up to 2.0, provided that aggregate exposure
+to securities with beta greater than 1.5 does not exceed 20% of aggregate portfolio value.
+
+========================================================
+SECTION 4: AGGRESSIVE TRADING MANDATES (TIER A)
+========================================================
+
+4.1 MAXIMUM EQUITY ALLOCATION
+Aggressive clients may allocate up to 90% of total portfolio capital to equities and equity derivatives.
+
+4.2 AGGRESSIVE TRADING LIMITS & CONCENTRATION
+Under Section 4.2 of the Trading Handbook:
+  - Single-stock concentration limit: No individual equity position may exceed 20% of total portfolio value.
+  - Sector concentration limit: Total exposure to a single industry sector is capped at 40%.
+  - Leverage limit: Net effective leverage via margin or structured notes must not exceed 1.5x total NAV.
+Advisors managing Aggressive accounts must document quarterly rebalancing whenever individual stock
+appreciation pushes holding weights above the 20% Section 4.2 concentration ceiling.
+
+4.3 HIGH-BETA & DERIVATIVE INSTRUMENTS
+Aggressive portfolios may incorporate unrestricted high-beta equities (e.g. NVDA, TSLA, speculative tech),
+options hedging structures, and private placement equity tranches.
+
+========================================================
+SECTION 5: ESG & SUSTAINABILITY POLICY INTERACTION
+========================================================
+
+5.1 ENVIRONMENTAL, SOCIAL, AND GOVERNANCE (ESG) CRITERIA
+Apex Financial provides specialized ESG-screened portfolio overlays upon client request.
+When an ESG mandate is active, investments in companies with severe fossil fuel extraction
+or weapons manufacturing exposure are filtered out.
+
+5.2 PRIORITY OF MANDATES & POLICY CONFLICT RESOLUTION
+In the event of a conflict between ESG preferences and core risk rules:
+The risk guidelines in Section 2, Section 3, and Section 4 ALWAYS TAKE PRECEDENCE over ESG preferences.
+Specifically: An ESG mandate does NOT grant permission to override Section 4.2 aggressive trading limits,
+nor does it allow exceeding the 30% equity cap for Conservative clients. Risk management is non-negotiable.
+
+========================================================
+SECTION 6: COMPLIANCE RECORDKEEPING & AUDIT
+========================================================
+
+All client advisory recommendations must be registered in the centralized advisory CRM
+within 24 hours of client communication. Compliance audits are executed bi-annually.
+Policy Version: 2026.2 | Apex Risk Management Committee.
