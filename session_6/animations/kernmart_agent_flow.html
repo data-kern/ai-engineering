@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>How One Request Flows</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700&display=swap" rel="stylesheet">
+<style>
+  :root { --ink: #0F172A; --muted: #475569; --bg: #EEF2F7; --card: #FFFFFF; --line: #D5DCE6; --blue: #2563EB; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--ink); display: flex; flex-direction: column; padding: 10px 16px 12px; gap: 8px; overflow: hidden; }
+
+  header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 20px; }
+  h1 { font-family: 'Outfit', sans-serif; font-size: 1.35rem; letter-spacing: .2px; white-space: nowrap; }
+  h1 span { color: var(--blue); }
+  h1 small { font: 600 .7rem 'Inter', sans-serif; letter-spacing: 1.4px; color: #64748B; margin-left: 10px; text-transform: uppercase; }
+  .legend { display: flex; flex-wrap: wrap; gap: 6px 8px; align-items: center; }
+  .chip { display: inline-flex; align-items: center; gap: 6px; font-size: .76rem; font-weight: 600; padding: 2px 9px 2px 6px; border-radius: 99px; border: 1.8px solid; }
+  .chip i { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+  .c-model { background: #EDE9FE; border-color: #7C3AED; color: #4C1D95; } .c-model i { background: #7C3AED; }
+  .c-code  { background: #DBEAFE; border-color: #2563EB; color: #1E3A8A; } .c-code i  { background: #2563EB; }
+  .c-guard { background: #FEE2E2; border-color: #DC2626; color: #991B1B; } .c-guard i { background: #DC2626; }
+  .c-human { background: #FEF3C7; border-color: #D97706; color: #92400E; } .c-human i { background: #D97706; }
+  .c-data  { background: #D1FAE5; border-color: #059669; color: #065F46; } .c-data i  { background: #059669; }
+  .c-dec   { background: #F1F5F9; border-color: #334155; color: #0F172A; } .c-dec i   { background: #334155; border-radius: 2px; transform: rotate(45deg) scale(.85); }
+  .note { color: var(--muted); font-size: .74rem; }
+
+  .bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 16px; }
+  .group { display: flex; align-items: center; gap: 6px; }
+  .group .lbl { font-size: .72rem; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; color: #64748B; margin-right: 2px; }
+  button { font: 600 .84rem 'Inter', sans-serif; padding: 6px 13px; border-radius: 8px; border: 2px solid var(--blue); background: #fff; color: #1E3A8A; cursor: pointer; }
+  button.primary { background: var(--blue); color: #fff; min-width: 96px; }
+  button.seg { border-color: #94A3B8; color: #334155; }
+  button.seg.on { background: #E0E7FF; border-color: #4F46E5; color: #312E81; }
+  button:hover:not(:disabled) { filter: brightness(.96); }
+  button:disabled { opacity: .4; cursor: default; }
+  button:focus-visible { outline: 3px solid #FACC15; outline-offset: 2px; }
+  #pos { font-size: .78rem; color: var(--muted); min-width: 64px; text-align: center; font-variant-numeric: tabular-nums; }
+
+  .card { flex: 1; min-height: 0; background: var(--card); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; box-shadow: 0 2px 10px rgba(15,23,42,.06); }
+  svg { display: block; width: 100%; height: 100%; }
+
+  svg text { font-family: 'Inter', system-ui, sans-serif; }
+  .lane  { font-size: 17px; font-weight: 700; letter-spacing: 1.2px; }
+  .lanesub { font-size: 13px; fill: #475569; }
+  .bt  { font-size: 15.5px; font-weight: 700; }
+  .bs  { font-size: 12.5px; fill: #1F2937; }
+  .num { font-size: 13px; font-weight: 700; fill: #fff; }
+  .tag { font-size: 12px; font-weight: 600; fill: #475569; }
+  .dt  { font-size: 13.5px; font-weight: 700; }
+  .ds  { font-size: 11.5px; fill: #334155; font-weight: 600; }
+  .loopt { font-size: 15px; font-weight: 700; letter-spacing: 1.6px; fill: #4338CA; }
+  .loops { font-size: 13px; fill: #4F46E5; }
+  .lb  { font-size: 13px; font-weight: 600; fill: #334155; paint-order: stroke; stroke: #fff; stroke-width: 4px; stroke-linejoin: round; }
+  .lbh { fill: #92400E; } .lbl { fill: #4338CA; } .lbd { fill: #047857; } .lbs { fill: #B91C1C; } .lbs2 { fill: #B91C1C; font-weight: 500; font-size: 12px; }
+
+  .ar { fill: none; stroke-width: 2.8; stroke-linejoin: round; }
+  .ar.main  { stroke: #334155; }
+  .ar.human { stroke: #D97706; }
+  .ar.loop  { stroke: #6366F1; stroke-dasharray: 9 6; }
+  .ar.stop  { stroke: #DC2626; }
+  .ar.data  { stroke: #059669; stroke-width: 2.4; stroke-dasharray: 3 5; stroke-linecap: round; }
+
+  /* lap tracker */
+  .chip rect { fill: #EEF2FF; stroke: #6366F1; stroke-width: 1.8; }
+  .ct { font-size: 12.5px; font-weight: 700; letter-spacing: 1px; fill: #3730A3; }
+  .cs { font-size: 12px; fill: #1E1B4B; }
+  g.chip { transition: opacity .4s ease, filter .4s ease; }
+  g.chip.pending { opacity: .3; }
+  g.chip.active { filter: drop-shadow(0 0 6px rgba(99,102,241,.8)); }
+  g.chip.active rect { fill: #E0E7FF; stroke: #4338CA; stroke-width: 3; }
+  g.chip.stopc rect { fill: #FEE2E2; stroke: #DC2626; }
+  g.chip.stopc .ct, g.chip.stopc .cs { fill: #7F1D1D; }
+
+  /* play-through states */
+  .el { transition: opacity .45s ease, filter .45s ease; }
+  .el.dim { opacity: .11; }
+  .el.hot { filter: drop-shadow(0 0 7px rgba(250,204,21,.95)); }
+  .el.hotred { filter: drop-shadow(0 0 8px rgba(220,38,38,.9)); }
+  @media (prefers-reduced-motion: reduce) { .el, g.chip { transition: none; } }
+</style>
+</head>
+<body>
+<header>
+  <h1>KernMart Support Agent · <span>how one request flows</span><small>DataKern · AI Engineering</small></h1>
+  <div class="legend">
+    <span class="chip c-model"><i></i>Model</span>
+    <span class="chip c-code"><i></i>Code</span>
+    <span class="chip c-guard"><i></i>Safety check</span>
+    <span class="chip c-human"><i></i>Human</span>
+    <span class="chip c-data"><i></i>Data</span>
+    <span class="chip c-dec"><i></i>Decision</span>
+    <span class="note">numbers = order of steps · “script 04” = demo script that adds the box</span>
+  </div>
+</header>
+
+<div class="bar">
+  <div class="group">
+    <span class="lbl">Scenario</span>
+    <button class="seg on" id="sc-normal">Refund, then answer</button>
+    <button class="seg" id="sc-stop">Never finishes → limit hit</button>
+  </div>
+  <div class="group">
+    <button id="prev">◀ Previous</button>
+    <button class="primary" id="play">▶ Play</button>
+    <button id="next">Next ▶</button>
+    <span id="pos">full view</span>
+    <button id="all">Show all</button>
+  </div>
+</div>
+
+<div class="card">
+<svg id="flow" viewBox="0 0 1560 826" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Swimlane flow of one customer request through the KernMart support agent, including the agent loop"><defs><marker id="h-main" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#334155"/></marker><marker id="h-human" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#D97706"/></marker><marker id="h-loop" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#6366F1"/></marker><marker id="h-data" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#059669"/></marker><marker id="h-stop" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#DC2626"/></marker><marker id="hs-data" viewBox="0 0 10 10" refX="2" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M10 0L0 5L10 10z" fill="#059669"/></marker></defs><rect x="0" y="10" width="1560" height="170" fill="#FFFFFF"/>
+<rect x="0" y="10" width="8" height="170" fill="#6B7280"/>
+<text x="22" y="93" class="lane" fill="#6B7280">CUSTOMER</text>
+<text x="22" y="112" class="lanesub">the person asking</text>
+<line x1="0" y1="10" x2="1560" y2="10" stroke="#E2E8F0"/>
+<rect x="0" y="180" width="1560" height="136" fill="#F8FAFC"/>
+<rect x="0" y="180" width="8" height="136" fill="#7C3AED"/>
+<text x="22" y="246" class="lane" fill="#7C3AED">MODEL</text>
+<text x="22" y="265" class="lanesub">asks for actions</text>
+<line x1="0" y1="180" x2="1560" y2="180" stroke="#E2E8F0"/>
+<rect x="0" y="316" width="1560" height="136" fill="#FFFFFF"/>
+<rect x="0" y="316" width="8" height="136" fill="#2563EB"/>
+<text x="22" y="382" class="lane" fill="#2563EB">CODE</text>
+<text x="22" y="401" class="lanesub">checks and runs</text>
+<line x1="0" y1="316" x2="1560" y2="316" stroke="#E2E8F0"/>
+<rect x="0" y="452" width="1560" height="136" fill="#F8FAFC"/>
+<rect x="0" y="452" width="8" height="136" fill="#D97706"/>
+<text x="22" y="518" class="lane" fill="#D97706">HUMAN</text>
+<text x="22" y="537" class="lanesub">approves risky ones</text>
+<line x1="0" y1="452" x2="1560" y2="452" stroke="#E2E8F0"/>
+<rect x="0" y="588" width="1560" height="136" fill="#FFFFFF"/>
+<rect x="0" y="588" width="8" height="136" fill="#059669"/>
+<text x="22" y="654" class="lane" fill="#059669">DATA</text>
+<text x="22" y="673" class="lanesub">where facts live</text>
+<line x1="0" y1="588" x2="1560" y2="588" stroke="#E2E8F0"/>
+<line x1="0" y1="724" x2="1560" y2="724" stroke="#E2E8F0"/>
+<rect x="693" y="14" width="570" height="570" rx="18" fill="#6366F1" fill-opacity=".06" stroke="#6366F1" stroke-width="2" stroke-dasharray="9 7"/>
+<text x="711" y="42" class="loopt">THE AGENT LOOP</text>
+<text x="711" y="62" class="loops">one lap = think → decide → check → act → observe</text>
+<g class="chip pending" id="chip0"><rect x="705" y="70" width="128" height="52" rx="9"/><text x="715" y="87" class="ct" id="chip0t"></text><text x="715" y="103" class="cs" id="chip0a"></text><text x="715" y="117" class="cs" id="chip0b"></text></g>
+<g class="chip pending" id="chip1"><rect x="841" y="70" width="128" height="52" rx="9"/><text x="851" y="87" class="ct" id="chip1t"></text><text x="851" y="103" class="cs" id="chip1a"></text><text x="851" y="117" class="cs" id="chip1b"></text></g>
+<g class="chip pending" id="chip2"><rect x="977" y="70" width="128" height="52" rx="9"/><text x="987" y="87" class="ct" id="chip2t"></text><text x="987" y="103" class="cs" id="chip2a"></text><text x="987" y="117" class="cs" id="chip2b"></text></g>
+<g class="chip pending" id="chip3"><rect x="1113" y="70" width="128" height="52" rx="9"/><text x="1123" y="87" class="ct" id="chip3t"></text><text x="1123" y="103" class="cs" id="chip3a"></text><text x="1123" y="117" class="cs" id="chip3b"></text></g>
+<path id="a1" class="el ar main" d="M279 95 H353 V328" marker-end="url(#h-main)"/>
+<path id="a2" class="el ar main" d="M417 384 H491 V304" marker-end="url(#h-main)"/>
+<path id="a3" class="el ar main" d="M555 248 H629 V328" marker-end="url(#h-main)"/>
+<path id="a4" class="el ar main" d="M693 384 H767 V304" marker-end="url(#h-main)"/>
+<path id="a5" class="el ar main" d="M831 248 H843" marker-end="url(#h-main)"/>
+<path id="a_yes" class="el ar main" d="M905 290 V328" marker-end="url(#h-main)"/>
+<path id="a_no" class="el ar main" d="M967 248 H1319 V328" marker-end="url(#h-main)"/>
+<path id="a_low" class="el ar main" d="M969 384 H1117" marker-end="url(#h-main)"/>
+<path id="a_risk" class="el ar human" d="M1043 384 V464" marker-end="url(#h-human)"/>
+<path id="a_hum" class="el ar human" d="M1107 520 H1159 V440" marker-end="url(#h-human)"/>
+<path id="a_lim" class="el ar loop" d="M1181 328 V196" marker-end="url(#h-loop)"/>
+<path id="a_ok" class="el ar loop" d="M1105 166 H767 V191" marker-end="url(#h-loop)"/>
+<path id="a_stop" class="el ar stop" d="M1257 166 H1327 V134" marker-end="url(#h-stop)"/>
+<path id="a_sr" class="el ar stop" d="M1380 78 H1393" marker-end="url(#h-stop)"/>
+<path id="a_end" class="el ar main" d="M1383 384 H1457 V151" marker-end="url(#h-main)"/>
+<path id="m1" class="el ar data" d="M629 608 V440" marker-end="url(#h-data)"/>
+<path id="p1" class="el ar data" d="M1043 576 V608" marker-end="url(#h-data)"/>
+<path id="k1" class="el ar data" d="M1181 440 V608" marker-start="url(#hs-data)" marker-end="url(#h-data)"/>
+<path id="r1" class="el ar data" d="M1225 440 V586 H1329 V608" marker-end="url(#h-data)"/>
+<text class="el lb lbl" data-for="" x="781" y="158" text-anchor="start">↺ ok → next lap, back to the model</text>
+<text class="el lb" data-for="" x="915" y="310" text-anchor="start">yes</text>
+<text class="el lb" data-for="" x="979" y="239" text-anchor="start">no → final answer</text>
+<text class="el lb" data-for="" x="1043" y="374" text-anchor="middle">low risk → run</text>
+<text class="el lb lbh" data-for="" x="1025" y="455" text-anchor="end">risky → human</text>
+<text class="el lb lbs" data-for="" x="1273" y="186" text-anchor="start">limit hit → stop</text>
+<text class="el lb lbs2" data-for="" x="1273" y="202" text-anchor="start">8 steps · 40k tokens · 120 s</text>
+<text class="el lb lbd" data-for="" x="638" y="562" text-anchor="start">recall</text>
+<g class="el" id="b1">
+<rect x="151" y="39" width="128" height="112" rx="12" fill="#E5E7EB" stroke="#6B7280" stroke-width="2.2"/>
+<circle cx="153" cy="41" r="12" fill="#6B7280"/><text x="153" y="46" text-anchor="middle" class="num">1</text>
+<text x="163" y="69" class="bt" fill="#1F2937">Customer</text>
+<text x="163" y="88" class="bs">“My order arrived</text>
+<text x="163" y="104" class="bs">late, I want a</text>
+<text x="163" y="120" class="bs">refund”</text>
+</g>
+<g class="el" id="b2">
+<rect x="289" y="328" width="128" height="112" rx="12" fill="#FEE2E2" stroke="#DC2626" stroke-width="2.2"/>
+<circle cx="291" cy="330" r="12" fill="#DC2626"/><text x="291" y="335" text-anchor="middle" class="num">2</text>
+<text x="301" y="358" class="bt" fill="#991B1B">Input guard</text>
+<text x="301" y="377" class="bs">masks card/IBAN</text>
+<text x="301" y="393" class="bs">blocks attack</text>
+<text x="301" y="409" class="bs">phrases</text>
+<text x="301" y="430" class="tag">script 04</text>
+</g>
+<g class="el" id="b3">
+<rect x="427" y="192" width="128" height="112" rx="12" fill="#EDE9FE" stroke="#7C3AED" stroke-width="2.2"/>
+<circle cx="429" cy="194" r="12" fill="#7C3AED"/><text x="429" y="199" text-anchor="middle" class="num">3</text>
+<text x="439" y="222" class="bt" fill="#4C1D95">Router</text>
+<text x="439" y="241" class="bs">classifies the</text>
+<text x="439" y="257" class="bs">request: status,</text>
+<text x="439" y="273" class="bs">refund, other</text>
+<text x="439" y="294" class="tag">script 01</text>
+</g>
+<g class="el" id="b4">
+<rect x="565" y="328" width="128" height="112" rx="12" fill="#DBEAFE" stroke="#2563EB" stroke-width="2.2"/>
+<circle cx="567" cy="330" r="12" fill="#2563EB"/><text x="567" y="335" text-anchor="middle" class="num">4</text>
+<text x="577" y="358" class="bt" fill="#1E3A8A">Pick route</text>
+<text x="577" y="377" class="bs">prompt + allowed</text>
+<text x="577" y="393" class="bs">tools, recalls</text>
+<text x="577" y="409" class="bs">memory</text>
+<text x="577" y="430" class="tag">scripts 01 · 05</text>
+</g>
+<g class="el" id="b5">
+<rect x="703" y="192" width="128" height="112" rx="12" fill="#EDE9FE" stroke="#7C3AED" stroke-width="2.2"/>
+<circle cx="705" cy="194" r="12" fill="#7C3AED"/><text x="705" y="199" text-anchor="middle" class="num">5</text>
+<text x="715" y="222" class="bt" fill="#4C1D95">Think</text>
+<text x="715" y="241" class="bs">decides the next</text>
+<text x="715" y="257" class="bs">tool to ask for,</text>
+<text x="715" y="273" class="bs">or the answer</text>
+<text x="715" y="294" class="tag">script 01</text>
+</g>
+<g class="el" id="dec">
+<polygon points="843,248 905,206 967,248 905,290" fill="#F1F5F9" stroke="#334155" stroke-width="2.4"/>
+<circle cx="872" cy="225" r="12" fill="#334155"/><text x="872" y="230" text-anchor="middle" class="num">6</text>
+<text x="905" y="253" text-anchor="middle" class="dt" fill="#0F172A">Wants a tool?</text>
+</g>
+<g class="el" id="b7">
+<rect x="841" y="328" width="128" height="112" rx="12" fill="#FEE2E2" stroke="#DC2626" stroke-width="2.2"/>
+<circle cx="843" cy="330" r="12" fill="#DC2626"/><text x="843" y="335" text-anchor="middle" class="num">7</text>
+<text x="853" y="358" class="bt" fill="#991B1B">Safety checks</text>
+<text x="853" y="377" class="bs">tool allowed?</text>
+<text x="853" y="393" class="bs">policy rules</text>
+<text x="853" y="409" class="bs">all pass?</text>
+<text x="853" y="430" class="tag">scripts 01 · 04</text>
+</g>
+<g class="el" id="b8">
+<rect x="979" y="464" width="128" height="112" rx="12" fill="#FEF3C7" stroke="#D97706" stroke-width="2.2"/>
+<circle cx="981" cy="466" r="12" fill="#D97706"/><text x="981" y="471" text-anchor="middle" class="num">8</text>
+<text x="991" y="494" class="bt" fill="#92400E">Human gate</text>
+<text x="991" y="513" class="bs">risky action?</text>
+<text x="991" y="529" class="bs">approve, edit</text>
+<text x="991" y="545" class="bs">or reject</text>
+<text x="991" y="566" class="tag">script 03</text>
+</g>
+<g class="el" id="b9">
+<rect x="1117" y="328" width="128" height="112" rx="12" fill="#DBEAFE" stroke="#2563EB" stroke-width="2.2"/>
+<circle cx="1119" cy="330" r="12" fill="#2563EB"/><text x="1119" y="335" text-anchor="middle" class="num">9</text>
+<text x="1129" y="358" class="bt" fill="#1E3A8A">Run tool</text>
+<text x="1129" y="377" class="bs">runs the tool</text>
+<text x="1129" y="393" class="bs">saves progress</text>
+<text x="1129" y="409" class="bs">(idempotent)</text>
+<text x="1129" y="430" class="tag">scripts 01 · 02</text>
+</g>
+<g class="el" id="lim">
+<polygon points="1105,166 1181,136 1257,166 1181,196" fill="#F1F5F9" stroke="#334155" stroke-width="2.4"/>
+<circle cx="1119" cy="134" r="12" fill="#334155"/><text x="1119" y="139" text-anchor="middle" class="num">10</text>
+<text x="1181" y="165" text-anchor="middle" class="dt" fill="#0F172A">Limits OK?</text>
+<text x="1181" y="180" text-anchor="middle" class="ds" id="limtxt">max 8 steps</text>
+</g>
+<g class="el" id="b11">
+<rect x="1255" y="328" width="128" height="112" rx="12" fill="#FEE2E2" stroke="#DC2626" stroke-width="2.2"/>
+<circle cx="1257" cy="330" r="12" fill="#DC2626"/><text x="1257" y="335" text-anchor="middle" class="num">11</text>
+<text x="1267" y="358" class="bt" fill="#991B1B">Output guard</text>
+<text x="1267" y="377" class="bs">checks amounts,</text>
+<text x="1267" y="393" class="bs">IBAN and email</text>
+<text x="1267" y="409" class="bs">before sending</text>
+<text x="1267" y="430" class="tag">script 04</text>
+</g>
+<g class="el" id="b12">
+<rect x="1393" y="39" width="128" height="112" rx="12" fill="#E5E7EB" stroke="#6B7280" stroke-width="2.2"/>
+<circle cx="1395" cy="41" r="12" fill="#6B7280"/><text x="1395" y="46" text-anchor="middle" class="num">12</text>
+<text x="1405" y="69" class="bt" fill="#1F2937">Reply</text>
+<text x="1405" y="88" class="bs">2–4 plain</text>
+<text x="1405" y="104" class="bs">sentences back</text>
+<text x="1405" y="120" class="bs">to the customer</text>
+</g>
+<g class="el" id="bstop">
+<rect x="1274" y="22" width="106" height="112" rx="12" fill="#FEE2E2" stroke="#DC2626" stroke-width="2.2"/>
+<circle cx="1276" cy="24" r="12" fill="#DC2626"/><text x="1276" y="29" text-anchor="middle" class="num">✖</text>
+<text x="1286" y="52" class="bt" fill="#991B1B">Stopped</text>
+<text x="1286" y="71" class="bs">limit reached:</text>
+<text x="1286" y="87" class="bs">code escalates</text>
+<text x="1286" y="103" class="bs">to a human</text>
+<text x="1286" y="124" class="tag">script 01</text>
+</g>
+<g class="el" id="d1">
+<rect x="571" y="608" width="116" height="96" rx="12" fill="#D1FAE5" stroke="#059669" stroke-width="2.2"/>
+<text x="583" y="638" class="bt" fill="#065F46">Memory</text>
+<text x="583" y="657" class="bs">facts about</text>
+<text x="583" y="673" class="bs">this customer</text>
+<text x="583" y="694" class="tag">script 05</text>
+</g>
+<g class="el" id="d2">
+<rect x="985" y="608" width="116" height="96" rx="12" fill="#D1FAE5" stroke="#059669" stroke-width="2.2"/>
+<text x="997" y="638" class="bt" fill="#065F46">Approvals</text>
+<text x="997" y="657" class="bs">every human</text>
+<text x="997" y="673" class="bs">decision saved</text>
+<text x="997" y="694" class="tag">script 03</text>
+</g>
+<g class="el" id="d3">
+<rect x="1111" y="608" width="140" height="96" rx="12" fill="#D1FAE5" stroke="#059669" stroke-width="2.2"/>
+<text x="1123" y="638" class="bt" fill="#065F46">KernMart data</text>
+<text x="1123" y="657" class="bs">read/write tools</text>
+<text x="1123" y="673" class="bs">orders · ledger</text>
+<text x="1123" y="694" class="tag">scripts 01 · 02</text>
+</g>
+<g class="el" id="d4">
+<rect x="1271" y="608" width="116" height="96" rx="12" fill="#D1FAE5" stroke="#059669" stroke-width="2.2"/>
+<text x="1283" y="638" class="bt" fill="#065F46">Run state</text>
+<text x="1283" y="657" class="bs">saved each step</text>
+<text x="1283" y="673" class="bs">crash → resume</text>
+<text x="1283" y="694" class="tag">script 02</text>
+</g>
+<g class="el" id="obs"><rect x="0" y="736" width="1560" height="84" fill="#FCE7F3" fill-opacity=".55"/><rect x="0" y="736" width="8" height="84" fill="#DB2777"/><text x="22" y="774" class="lane" fill="#DB2777">WATCHING</text><text x="22" y="793" class="lanesub">wraps every step</text>
+<rect x="160" y="745" width="440" height="66" rx="12" fill="#FFFFFF" stroke="#DB2777" stroke-width="2"/><text x="174" y="769" class="bt" fill="#9D174D">Traces</text><text x="174" y="789" class="bs">every step becomes a span you can open (Arize Phoenix)</text><text x="586" y="769" text-anchor="end" class="tag">script 06</text>
+<rect x="628" y="745" width="440" height="66" rx="12" fill="#FFFFFF" stroke="#DB2777" stroke-width="2"/><text x="642" y="769" class="bt" fill="#9D174D">Audit log</text><text x="642" y="789" class="bs">who decided what: model, code or human, with a time</text><text x="1054" y="769" text-anchor="end" class="tag">scripts 02 · 06</text>
+<rect x="1096" y="745" width="440" height="66" rx="12" fill="#FFFFFF" stroke="#DB2777" stroke-width="2"/><text x="1110" y="769" class="bt" fill="#9D174D">Evals</text><text x="1110" y="789" class="bs">replay test cases and check the path, on every change</text><text x="1522" y="769" text-anchor="end" class="tag">script 06</text>
+</g><circle id="packet" r="8" cx="-20" cy="-20" fill="#FACC15" stroke="#92400E" stroke-width="2.5" opacity="0"/></svg>
+</div>
+
+<script>
+  const svg = document.getElementById('flow');
+  const $ = id => document.getElementById(id);
+  const packet = $('packet');
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const ALL = [...svg.querySelectorAll('.el')];
+  const byId = Object.fromEntries(ALL.filter(e => e.id).map(e => [e.id, e]));
+  const labels = ALL.filter(e => e.tagName === 'text' && !e.id);       // arrow captions, lit with their neighbours
+  const CHIPS = [0, 1, 2, 3].map(k => ({ g: $('chip' + k), t: $('chip' + k + 't'), a: $('chip' + k + 'a'), b: $('chip' + k + 'b') }));
+
+  /* ---------- scenarios: frames light elements cumulatively; `hot` glows now; `pk` = arrows the dot travels ---------- */
+  const PRE = [
+    { add: ['b1'] },
+    { add: ['a1', 'b2'], pk: ['a1'] },
+    { add: ['a2', 'b3'], pk: ['a2'] },
+    { add: ['a3', 'b4', 'm1', 'd1'], pk: ['a3'] },
+  ];
+  const lapThink = (n, steps) => ({ add: ['a4', 'b5', 'a5', 'dec'], hot: ['b5', 'dec'], pk: n === 1 ? ['a4', 'a5'] : ['a_ok', 'a5'], lap: n, lim: steps });
+  const lapCheck = { add: ['a_yes', 'b7'], hot: ['dec', 'b7'], pk: ['a_yes'] };
+  const lapRun   = { add: ['a_low', 'b9', 'k1', 'd3', 'r1', 'd4'], hot: ['b9', 'd3'], pk: ['a_low'] };
+  const lapLimit = (n) => ({ add: ['a_lim', 'lim', 'a_ok'], hot: ['lim'], pk: ['a_lim'], lap: n, lim: n, limhot: true });
+
+  const NORMAL = {
+    chips: [['LAP 1', 'asks get_order', 'result comes back'], ['LAP 2', 'asks eligibility', 'result: eligible'],
+            ['LAP 3', 'asks issue_refund', 'human approves'], ['LAP 4', 'no tool needed', 'writes the answer']],
+    frames: [...PRE,
+      lapThink(1, 1), lapCheck, lapRun, lapLimit(1),
+      lapThink(2, 2), lapCheck, lapRun, lapLimit(2),
+      lapThink(3, 3), lapCheck,
+      { add: ['a_risk', 'b8', 'p1', 'd2'], hot: ['b8', 'd2'], pk: ['a_risk'], lap: 3 },
+      { add: ['a_hum', 'b9', 'k1', 'd3'], hot: ['b9', 'd3'], pk: ['a_hum'], lap: 3 },
+      lapLimit(3),
+      { add: ['a5', 'dec'], hot: ['b5', 'dec'], pk: ['a_ok', 'a5'], lap: 4, lim: 4 },
+      { add: ['a_no', 'b11'], hot: ['dec', 'b11'], pk: ['a_no'], lap: 4, done: true },
+      { add: ['a_end', 'b12'], hot: ['b12'], pk: ['a_end'], lap: 4, done: true },
+      { add: ['obs'], hot: ['obs'], lap: 4, done: true },
+    ],
+  };
+  const STOP = {
+    chips: [['LAP 1', 'asks a tool', 'result comes back'], ['LAP 2', 'asks a tool', 'result comes back'],
+            ['LAP 3 – 7', 'still asking…', 'no answer, ever'], ['LAP 8', 'LIMIT REACHED', 'loop is cut off']],
+    stopChip: 3,
+    frames: [...PRE,
+      lapThink(1, 1), lapCheck, lapRun, lapLimit(1),
+      lapThink(2, 2), lapCheck, lapRun, lapLimit(2),
+      { add: ['a5', 'dec'], hot: ['b5', 'dec', 'lim'], pk: ['a_ok', 'a5'], lap: 3, lim: 3 },
+      { add: ['a_yes', 'b7', 'a_low', 'b9'], hot: ['b7', 'b9'], pk: ['a_yes', 'a_low'], lap: 3, lim: 7 },
+      { add: ['a5', 'dec'], hot: ['b5', 'dec'], pk: ['a_lim', 'a_ok', 'a5'], lap: 4, lim: 8 },
+      { add: ['a_yes', 'b7', 'a_low', 'b9'], hot: ['b7', 'b9'], pk: ['a_yes', 'a_low'], lap: 4, lim: 8 },
+      { add: ['a_lim', 'lim'], hot: ['lim'], pk: ['a_lim'], lap: 4, lim: 8, limhot: true, limbad: true },
+      { add: ['a_stop', 'bstop'], hot: ['bstop'], pk: ['a_stop'], lap: 4, lim: 8, limbad: true },
+      { add: ['a_sr', 'b12'], hot: ['b12'], pk: ['a_sr'], lap: 4, lim: 8, limbad: true },
+      { add: ['obs'], hot: ['obs'], lap: 4, lim: 8, limbad: true },
+    ],
+  };
+
+  let scenario = NORMAL, cur = -1, timer = null, raf = null;       // cur = -1 → full view
+
+  function setChips(sc, upTo, done) {
+    sc.chips.forEach((c, k) => {
+      const ch = CHIPS[k];
+      ch.t.textContent = c[0]; ch.a.textContent = c[1]; ch.b.textContent = c[2];
+      const isStop = sc.stopChip === k;
+      ch.g.classList.toggle('stopc', isStop);
+      let state = 'pending';
+      if (upTo < 0) state = 'done';                                  // full view: everything filled in
+      else if (k + 1 < upTo) state = 'done';
+      else if (k + 1 === upTo) state = done && !isStop ? 'done' : 'active';
+      ch.g.classList.toggle('pending', state === 'pending');
+      ch.g.classList.toggle('active', state === 'active');
+    });
+  }
+
+  function render(i, animate) {
+    cur = i;
+    const sc = scenario;
+    $('limtxt').textContent = 'max 8 steps';
+    labels.forEach(l => l.classList.remove('dim'));
+    if (i < 0) {                                                     // full view
+      ALL.forEach(e => e.classList.remove('dim', 'hot', 'hotred'));
+      setChips(sc, -1, true);
+      $('pos').textContent = 'full view';
+    } else {
+      const lit = new Set(), hot = new Set();
+      let lap = 0, lim = 0, limhot = false, limbad = false, done = false;
+      sc.frames.slice(0, i + 1).forEach((f, k) => {
+        f.add.forEach(id => lit.add(id));
+        if (f.lap) lap = f.lap;
+        if (f.lim) lim = f.lim;
+        done = !!f.done;
+        if (k === i) { (f.hot || f.add).forEach(id => hot.add(id)); limhot = !!f.limhot; limbad = !!f.limbad; }
+      });
+      ALL.forEach(e => {
+        const on = !e.id ? true : lit.has(e.id);
+        e.classList.toggle('dim', e.id ? !on : false);
+        e.classList.toggle('hot', !!e.id && hot.has(e.id) && !(e.id === 'lim' && limbad) && e.id !== 'bstop');
+        e.classList.toggle('hotred', !!e.id && ((e.id === 'lim' && limbad && limhot) || (e.id === 'bstop' && hot.has('bstop'))));
+      });
+      // arrow captions follow the arrows they annotate
+      const cap = [['yes', 'a_yes'], ['no → final answer', 'a_no'], ['low risk → run', 'a_low'], ['risky → human', 'a_risk'],
+                   ['↺ ok → next lap, back to the model', 'a_ok'], ['limit hit → stop', 'a_stop'], ['8 steps · 40k tokens · 120 s', 'a_stop'], ['recall', 'm1']];
+      labels.forEach(l => { const m = cap.find(c => c[0] === l.textContent); l.classList.toggle('dim', m ? !lit.has(m[1]) : false); });
+      if (lim) $('limtxt').textContent = `step ${lim} / 8`;
+      setChips(sc, lap, done);
+      $('pos').textContent = `${i + 1} / ${sc.frames.length}`;
+      if (animate && !reduce) movePacket(sc.frames[i].pk || []);
+    }
+    $('prev').disabled = i < 0;
+    $('next').disabled = i >= sc.frames.length - 1;
+  }
+
+  function movePacket(ids) {
+    cancelAnimationFrame(raf);
+    const paths = ids.map(id => byId[id]).filter(Boolean);
+    if (!paths.length) { packet.setAttribute('opacity', 0); return; }
+    const lens = paths.map(p => p.getTotalLength()), total = lens.reduce((a, b) => a + b, 0);
+    const dur = Math.min(1100, 350 + total * 1.1), t0 = performance.now();
+    packet.setAttribute('opacity', 1);
+    (function tick(t) {
+      let d = Math.min(1, (t - t0) / dur) * total, k = 0;
+      while (k < paths.length - 1 && d > lens[k]) { d -= lens[k]; k++; }
+      const p = paths[k].getPointAtLength(Math.min(d, lens[k]));
+      packet.setAttribute('cx', p.x); packet.setAttribute('cy', p.y);
+      if (t - t0 < dur) raf = requestAnimationFrame(tick); else setTimeout(() => packet.setAttribute('opacity', 0), 200);
+    })(t0);
+  }
+
+  const last = () => scenario.frames.length - 1;
+  function stop() { clearInterval(timer); timer = null; $('play').textContent = '▶ Play'; }
+  function go(i) { render(Math.max(-1, Math.min(last(), i)), true); }
+  function showAll() { stop(); cancelAnimationFrame(raf); packet.setAttribute('opacity', 0); render(-1, false); }
+  function next() { stop(); if (cur < last()) go(cur + 1); }
+  function prev() { stop(); if (cur > 0) go(cur - 1); else if (cur === 0) showAll(); }
+
+  $('play').onclick = () => {
+    if (timer) { stop(); return; }
+    if (cur < 0 || cur >= last()) cur = -1;
+    $('play').textContent = '❚❚ Pause';
+    go(cur + 1);
+    timer = setInterval(() => { if (cur >= last()) { stop(); return; } go(cur + 1); }, 1500);
+  };
+  $('next').onclick = next; $('prev').onclick = prev; $('all').onclick = showAll;
+
+  function pick(sc, btn) { stop(); scenario = sc; $('sc-normal').classList.toggle('on', btn === 'sc-normal'); $('sc-stop').classList.toggle('on', btn === 'sc-stop'); cancelAnimationFrame(raf); packet.setAttribute('opacity', 0); render(-1, false); }
+  $('sc-normal').onclick = () => pick(NORMAL, 'sc-normal');
+  $('sc-stop').onclick = () => pick(STOP, 'sc-stop');
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); next(); }
+    else if (e.key === 'ArrowLeft') { prev(); }
+    else if (e.key === 'Escape' || e.key.toLowerCase() === 'r') showAll();
+  });
+
+  // #3 opens at frame 3; #stop-5 opens the limit scenario at frame 5 (handy for checking a frame without clicking)
+  const m = location.hash.match(/^#(stop-)?(\d+)$/);
+  if (m) { if (m[1]) pick(STOP, 'sc-stop'); render(+m[2], false); } else render(-1, false);
+</script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+# Needed by every script. The openai package also talks to Groq (the course default), because Groq speaks the OpenAI protocol.
+openai>=1.50
+
+# Optional: only if you run with GEMINI_API_KEY (LLM_PROVIDER=gemini)
+# google-genai>=1.0
+
+# Optional: only for scripts 06 and 07, the trace UI (the demo also prints a local waterfall without it)
+# arize-phoenix
