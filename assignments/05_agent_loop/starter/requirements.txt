@@ -1,0 +1,4 @@
+openai>=1.50
+
+# Part 1 (Explore): notebook kernel for VS Code
+ipykernel
