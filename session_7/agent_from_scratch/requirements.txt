@@ -1,0 +1,8 @@
+# The agent itself needs only this: the LLM is called with plain HTTP.
+requests>=2.31
+
+# Only for seeing every step in Arize Phoenix (trusted_agent.py, trusted_evals.py). Optional: without them the
+# agent runs the same, untraced. Start the UI with:  phoenix serve   (then open http://localhost:6006)
+arize-phoenix>=21.0
+arize-phoenix-otel>=0.17
+arize-phoenix-client>=3.6
