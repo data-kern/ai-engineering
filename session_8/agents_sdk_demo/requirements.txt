@@ -1,0 +1,8 @@
+# The agent: the OpenAI Agents SDK. It talks to Groq through the OpenAI-compatible Chat Completions API (see llm.py).
+openai-agents>=0.24,<1
+
+# Only for seeing every step in Arize Phoenix. Optional: without them the agent runs the same, untraced.
+# Start the UI with:  phoenix serve   (then open http://localhost:6006)
+arize-phoenix>=21.0
+arize-phoenix-otel>=0.17
+openinference-instrumentation-openai-agents>=1.0
