@@ -1,0 +1,9 @@
+openai-agents>=0.24,<1
+mcp>=1.30,<2
+fastapi>=0.162
+uvicorn>=0.30
+sqlalchemy[asyncio]>=2.0
+asyncpg>=0.29
+arize-phoenix-otel>=0.17
+openinference-instrumentation-openai-agents>=1.0
+openinference-instrumentation-mcp>=2.1,<3

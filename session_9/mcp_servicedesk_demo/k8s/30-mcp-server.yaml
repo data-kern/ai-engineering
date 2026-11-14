@@ -1,0 +1,55 @@
+# The MCP server as a normal Kubernetes service. Two replicas, because it keeps no state between requests
+# (stateless_http=True): any replica can answer any request, so the Service can simply round-robin.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mcp-server
+  namespace: servicedesk
+spec:
+  replicas: 2
+  selector:
+    matchLabels: { app: mcp-server }
+  template:
+    metadata:
+      labels: { app: mcp-server }
+    spec:
+      securityContext:
+        runAsNonRoot: true
+      containers:
+        - name: mcp-server
+          image: kernmart-servicedesk/mcp-server:v1
+          imagePullPolicy: IfNotPresent          # use the image we built locally (same as Session 3)
+          ports:
+            - containerPort: 8000
+          env:
+            - { name: MCP_HOST, value: "0.0.0.0" }
+            - { name: MCP_PORT, value: "8000" }
+            - { name: MCP_LOG_LEVEL, value: "INFO" }
+            - name: DATABASE_URL
+              valueFrom: { secretKeyRef: { name: servicedesk-secrets, key: DATABASE_URL } }
+            - { name: SMTP_HOST, value: mailpit }
+            - { name: SMTP_PORT, value: "1025" }
+            - { name: PHOENIX_COLLECTOR_ENDPOINT, value: "http://phoenix:6006" }
+            - name: SLACK_WEBHOOK_URL
+              valueFrom: { secretKeyRef: { name: servicedesk-secrets, key: SLACK_WEBHOOK_URL } }
+          readinessProbe:                        # "send me traffic?"  fails while the database is unreachable
+            httpGet: { path: /healthz, port: 8000 }
+            periodSeconds: 5
+          livenessProbe:                         # "restart me?"
+            httpGet: { path: /healthz, port: 8000 }
+            initialDelaySeconds: 20
+            periodSeconds: 10
+            failureThreshold: 6
+          resources:
+            requests: { cpu: 100m, memory: 128Mi }
+            limits: { memory: 384Mi }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mcp-server
+  namespace: servicedesk
+spec:
+  selector: { app: mcp-server }
+  ports:
+    - { port: 8000, targetPort: 8000 }

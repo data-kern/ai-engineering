@@ -1,0 +1,79 @@
+# The two screens: the employee's chat and the human staff console.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chat-ui
+  namespace: servicedesk
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: chat-ui }
+  template:
+    metadata:
+      labels: { app: chat-ui }
+    spec:
+      securityContext:
+        runAsNonRoot: true
+      containers:
+        - name: chat-ui
+          image: kernmart-servicedesk/chat-ui:v1
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8501
+          env:
+            - { name: AGENT_API_URL, value: "http://agent-api:8000/api/v1/chat" }
+          readinessProbe:
+            httpGet: { path: /_stcore/health, port: 8501 }
+          resources:
+            requests: { cpu: 50m, memory: 128Mi }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: chat-ui
+  namespace: servicedesk
+spec:
+  selector: { app: chat-ui }
+  ports:
+    - { port: 8501, targetPort: 8501 }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: staff-console
+  namespace: servicedesk
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: staff-console }
+  template:
+    metadata:
+      labels: { app: staff-console }
+    spec:
+      securityContext:
+        runAsNonRoot: true
+      containers:
+        - name: staff-console
+          image: kernmart-servicedesk/staff-console:v1
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8502
+          env:
+            - name: DATABASE_URL
+              valueFrom: { secretKeyRef: { name: servicedesk-secrets, key: DATABASE_URL } }
+            - { name: SMTP_HOST, value: mailpit }
+            - { name: SMTP_PORT, value: "1025" }
+          readinessProbe:
+            httpGet: { path: /_stcore/health, port: 8502 }
+          resources:
+            requests: { cpu: 50m, memory: 128Mi }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: staff-console
+  namespace: servicedesk
+spec:
+  selector: { app: staff-console }
+  ports:
+    - { port: 8502, targetPort: 8502 }

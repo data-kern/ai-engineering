@@ -1,0 +1,63 @@
+# The system of record. One replica with a disk: a database is the one thing you do NOT scale by adding pods.
+# (In a real company this is a managed database: Azure Database for PostgreSQL, RDS, Cloud SQL.)
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-data
+  namespace: servicedesk
+spec:
+  accessModes: ["ReadWriteOnce"]
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres
+  namespace: servicedesk
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate                  # never two postgres pods on one disk, even during an update
+  selector:
+    matchLabels: { app: postgres }
+  template:
+    metadata:
+      labels: { app: postgres }
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:16-alpine
+          ports:
+            - containerPort: 5432
+          env:
+            - { name: POSTGRES_USER, value: servicedesk }
+            - { name: POSTGRES_DB, value: servicedesk }
+            - name: POSTGRES_PASSWORD
+              valueFrom: { secretKeyRef: { name: servicedesk-secrets, key: POSTGRES_PASSWORD } }
+            - { name: PGDATA, value: /var/lib/postgresql/data/pgdata }     # a sub-folder: the disk root has lost+found
+          volumeMounts:
+            - { name: data, mountPath: /var/lib/postgresql/data }
+            - { name: init-sql, mountPath: /docker-entrypoint-initdb.d, readOnly: true }
+          readinessProbe:
+            exec: { command: ["pg_isready", "-U", "servicedesk"] }
+            periodSeconds: 3
+          resources:
+            requests: { cpu: 100m, memory: 128Mi }
+            limits: { memory: 512Mi }
+      volumes:
+        - name: data
+          persistentVolumeClaim: { claimName: postgres-data }
+        - name: init-sql
+          configMap: { name: servicedesk-sql }       # created by deploy.sh from servicedesk_core/sql/*.sql
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  namespace: servicedesk
+spec:
+  selector: { app: postgres }
+  ports:
+    - { port: 5432, targetPort: 5432 }

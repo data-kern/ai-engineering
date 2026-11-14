@@ -1,0 +1,52 @@
+# The agent service. It holds the model key and the instructions, and NO database password and NO tool code.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: agent-api
+  namespace: servicedesk
+spec:
+  replicas: 2
+  selector:
+    matchLabels: { app: agent-api }
+  template:
+    metadata:
+      labels: { app: agent-api }
+    spec:
+      securityContext:
+        runAsNonRoot: true
+      containers:
+        - name: agent-api
+          image: kernmart-servicedesk/agent-api:v1
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8000
+          env:
+            - name: GROQ_API_KEY
+              valueFrom: { secretKeyRef: { name: servicedesk-secrets, key: GROQ_API_KEY } }
+            - { name: LLM_MODEL, value: "openai/gpt-oss-120b" }
+            - name: LLM_BASE_URL
+              valueFrom: { secretKeyRef: { name: servicedesk-secrets, key: LLM_BASE_URL } }
+            - { name: MCP_URL, value: "http://mcp-server:8000/mcp" }
+            - name: SESSION_DATABASE_URL
+              valueFrom: { secretKeyRef: { name: servicedesk-secrets, key: SESSION_DATABASE_URL } }
+            - { name: PHOENIX_COLLECTOR_ENDPOINT, value: "http://phoenix:6006" }
+          readinessProbe:
+            httpGet: { path: /api/v1/health, port: 8000 }
+            periodSeconds: 5
+          livenessProbe:
+            httpGet: { path: /api/v1/health, port: 8000 }
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          resources:
+            requests: { cpu: 100m, memory: 192Mi }
+            limits: { memory: 512Mi }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: agent-api
+  namespace: servicedesk
+spec:
+  selector: { app: agent-api }
+  ports:
+    - { port: 8000, targetPort: 8000 }

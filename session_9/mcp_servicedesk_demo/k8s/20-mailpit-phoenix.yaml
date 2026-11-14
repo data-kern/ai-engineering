@@ -1,0 +1,75 @@
+# Two helper services: a real SMTP server that keeps every email (Mailpit) and the trace viewer (Phoenix).
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mailpit
+  namespace: servicedesk
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: mailpit }
+  template:
+    metadata:
+      labels: { app: mailpit }
+    spec:
+      containers:
+        - name: mailpit
+          image: axllent/mailpit:latest
+          ports:
+            - { name: smtp, containerPort: 1025 }
+            - { name: web, containerPort: 8025 }
+          readinessProbe:
+            httpGet: { path: /livez, port: 8025 }
+          resources:
+            requests: { cpu: 20m, memory: 32Mi }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mailpit
+  namespace: servicedesk
+spec:
+  selector: { app: mailpit }
+  ports:
+    - { name: smtp, port: 1025, targetPort: 1025 }
+    - { name: web, port: 8025, targetPort: 8025 }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: phoenix
+  namespace: servicedesk
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: phoenix }
+  template:
+    metadata:
+      labels: { app: phoenix }
+    spec:
+      # Kubernetes puts one environment variable per Service into every pod, and a Service called "phoenix"
+      # creates PHOENIX_PORT=tcp://10.x.x.x:6006. Phoenix reads PHOENIX_PORT as its own port setting and
+      # refuses to start. This switches that injection off for this pod.
+      enableServiceLinks: false
+      containers:
+        - name: phoenix
+          image: arizephoenix/phoenix:version-21.1.0
+          ports:
+            - containerPort: 6006
+          env:
+            - { name: PHOENIX_ENABLE_AUTH, value: "false" }     # demo only. At work: keep auth on, use an API key.
+          readinessProbe:
+            httpGet: { path: /healthz, port: 6006 }
+            initialDelaySeconds: 5
+          resources:
+            requests: { cpu: 100m, memory: 512Mi }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: phoenix
+  namespace: servicedesk
+spec:
+  selector: { app: phoenix }
+  ports:
+    - { port: 6006, targetPort: 6006 }

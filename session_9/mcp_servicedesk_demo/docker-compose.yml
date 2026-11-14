@@ -1,0 +1,103 @@
+# The whole IT service desk on one laptop:  docker compose up --build
+#
+#   employee ──> chat-ui ──> agent-api ──MCP over HTTP──> mcp-server ──> postgres
+#                               │                            │             ▲
+#                               └── traces ──> phoenix <─────┘             │
+#   human ─────> staff-console ───────────────────────────────────────────┘
+#   mcp-server ──email──> mailpit
+#
+# Ports on your machine (chosen to avoid 5432 and 8000, which are often already taken):
+#   8501 chat-ui   8502 staff-console   8020 agent-api   8030 mcp-server   5433 postgres
+#   6006 phoenix   8025 mailpit (web)   1025 mailpit (smtp)
+
+x-database: &database
+  DATABASE_URL: postgresql://servicedesk:servicedesk@postgres:5432/servicedesk
+
+x-tracing: &tracing
+  PHOENIX_COLLECTOR_ENDPOINT: http://phoenix:6006
+  PHOENIX_PROJECT_NAME: kernmart-servicedesk
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: servicedesk
+      POSTGRES_PASSWORD: servicedesk
+      POSTGRES_DB: servicedesk
+    volumes:
+      # Postgres runs every .sql file in this folder the FIRST time it starts with an empty volume.
+      - ./servicedesk_core/sql:/docker-entrypoint-initdb.d:ro
+      - pgdata:/var/lib/postgresql/data
+    ports: ["5433:5432"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U servicedesk"]
+      interval: 3s
+      retries: 20
+
+  mailpit:                       # a real SMTP server that keeps every email and shows it in a web page
+    image: axllent/mailpit:latest
+    ports: ["8025:8025", "1025:1025"]
+
+  phoenix:                       # traces. Authentication is switched OFF for the demo; keep it on at work.
+    image: arizephoenix/phoenix:version-21.1.0
+    environment:
+      PHOENIX_ENABLE_AUTH: "false"
+    ports: ["6006:6006"]
+
+  mcp-server:
+    build: { context: ., dockerfile: mcp_server/Dockerfile }
+    image: kernmart-servicedesk/mcp-server:v1
+    environment:
+      <<: [*database, *tracing]
+      SMTP_HOST: mailpit
+      SMTP_PORT: "1025"
+      SLACK_WEBHOOK_URL: ${SLACK_WEBHOOK_URL:-}
+      MCP_LOG_LEVEL: INFO
+    ports: ["8030:8000"]
+    depends_on:
+      postgres: { condition: service_healthy }
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/healthz')"]
+      interval: 5s
+      retries: 12
+
+  agent-api:
+    build: { context: ., dockerfile: agent_api/Dockerfile }
+    image: kernmart-servicedesk/agent-api:v1
+    environment:
+      <<: *tracing
+      GROQ_API_KEY: ${GROQ_API_KEY:-}
+      LLM_MODEL: ${LLM_MODEL:-openai/gpt-oss-120b}
+      LLM_BASE_URL: ${LLM_BASE_URL:-https://api.groq.com/openai/v1}
+      MCP_URL: http://mcp-server:8000/mcp
+      SESSION_DATABASE_URL: postgresql+asyncpg://servicedesk:servicedesk@postgres:5432/servicedesk
+    ports: ["8020:8000"]
+    depends_on:
+      mcp-server: { condition: service_healthy }
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/v1/health')"]
+      interval: 5s
+      retries: 12
+
+  chat-ui:
+    build: { context: ., dockerfile: chat_ui/Dockerfile }
+    image: kernmart-servicedesk/chat-ui:v1
+    environment:
+      AGENT_API_URL: http://agent-api:8000/api/v1/chat
+    ports: ["8501:8501"]
+    depends_on:
+      agent-api: { condition: service_healthy }
+
+  staff-console:
+    build: { context: ., dockerfile: staff_console/Dockerfile }
+    image: kernmart-servicedesk/staff-console:v1
+    environment:
+      <<: *database
+      SMTP_HOST: mailpit
+      SMTP_PORT: "1025"
+    ports: ["8502:8502"]
+    depends_on:
+      postgres: { condition: service_healthy }
+
+volumes:
+  pgdata:
